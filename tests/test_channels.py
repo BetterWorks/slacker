@@ -24,7 +24,7 @@ class TestUtils(unittest.TestCase):
             status_code=200, text=json_to_text,
         )
 
-        channels = Channels(token='aaa')
+        channels = Channels(token='aaa', timeout=300)
 
         self.assertEqual(
             'C111', channels.get_channel_id('general')
@@ -45,7 +45,7 @@ class TestUtils(unittest.TestCase):
             status_code=200, text=json_to_text,
         )
 
-        channels = Channels(token='aaa')
+        channels = Channels(token='aaa', timeout=300)
 
         self.assertEqual(
             None, channels.get_channel_id('fake_group')
