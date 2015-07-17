@@ -25,7 +25,8 @@ DEFAULT_TIMEOUT = 300
 
 __all__ = ['Error', 'Response', 'BaseAPI', 'API', 'Auth', 'Users', 'Groups',
            'Channels', 'Chat', 'IM', 'IncomingWebhook', 'Search', 'Files',
-           'Stars', 'Emoji', 'Presence', 'RTM', 'Team', 'OAuth', 'Slacker']
+           'Stars', 'Emoji', 'Presence', 'RTM', 'Team', 'Reactions', 'OAuth',
+           'Slacker']
 
 
 class Error(Exception):
@@ -41,7 +42,7 @@ class Response(object):
 
 
 class BaseAPI(object):
-    def __init__(self, timeout, token=None):
+    def __init__(self, token=None, timeout=DEFAULT_TIMEOUT):
         self.timeout = timeout
         self.token = token
 
@@ -234,7 +235,7 @@ class Chat(BaseAPI):
     def post_message(self, channel, text, username=None, as_user=None, parse=None,
                      link_names=None, attachments=None, unfurl_links=None,
                      unfurl_media=None, icon_url=None, icon_emoji=None):
-       
+
         # Ensure attachments are json encoded
         if attachments:
             if isinstance(attachments, list):
@@ -399,6 +400,58 @@ class Team(BaseAPI):
                         params={'count': count, 'page': page})
 
 
+class Reactions(BaseAPI):
+    def add(self, name, file_=None, file_comment=None, channel=None,
+            timestamp=None):
+        # One of file, file_comment, or the combination of channel and timestamp
+        # must be specified
+        assert (file_ or file_comment) or (channel and timestamp)
+
+        return self.post('reactions.add',
+                         params={
+                             'name': name,
+                             'file': file_,
+                             'file_comment': file_comment,
+                             'channel': channel,
+                             'timestamp': timestamp,
+                         })
+
+    def get(self, file_=None, file_comment=None, channel=None, timestamp=None,
+            full=None):
+        return super(Reactions, self).get('reactions.get',
+                                          params={
+                                              'file': file_,
+                                              'file_comment': file_comment,
+                                              'channel': channel,
+                                              'timestamp': timestamp,
+                                              'full': full,
+                                          })
+
+    def list(self, user=None, full=None, count=None, page=None):
+        return super(Reactions, self).get('reactions.list',
+                                          params={
+                                              'user': user,
+                                              'full': full,
+                                              'count': count,
+                                              'page': page,
+                                          })
+
+    def remove(self, name, file_=None, file_comment=None, channel=None,
+               timestamp=None):
+        # One of file, file_comment, or the combination of channel and timestamp
+        # must be specified
+        assert (file_ or file_comment) or (channel and timestamp)
+
+        return self.post('reactions.remove',
+                         params={
+                             'name': name,
+                             'file': file_,
+                             'file_comment': file_comment,
+                             'channel': channel,
+                             'timestamp': timestamp,
+                         })
+
+
 class OAuth(BaseAPI):
     def access(self, client_id, client_secret, code, redirect_uri=None):
         return self.post('oauth.access',
@@ -411,7 +464,7 @@ class OAuth(BaseAPI):
 
 
 class IncomingWebhook(object):
-    def __init__(self, timeout, url=None):
+    def __init__(self, url=None, timeout=DEFAULT_TIMEOUT):
         self.url = url
         self.timeout = timeout
 
